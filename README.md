@@ -68,3 +68,14 @@ python experiments/validate_analytical_counts.py
 ```
 
 The validator reads the existing per-length CSV and aggregate Markdown, checks all event counts and displayed rates, and saves the mathematical characterization to `reports/modulus_characterization.md`. It does not rerun the exhaustive sweep or modify the existing reports.
+
+## Phase 4 research notes
+
+The research documents provide theoretical foundations, factual comparisons with established check-character and integrity methods, an educational timeline, and a record of study limitations and possible follow-up work:
+
+- [Phase 4 research plan](docs/research_plan.md)
+- [Mathematical foundations](docs/mathematical_foundations.md)
+- [Checksum algorithm comparison](docs/checksum_algorithms_comparison.md)
+- [Error detection and error correction](docs/error_detection_vs_error_correction.md)
+- [Checksum history](docs/checksum_history.md)
+- [Limitations and future work](docs/limitations_and_future_work.md)
