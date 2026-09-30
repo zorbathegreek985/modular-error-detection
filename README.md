@@ -60,3 +60,11 @@ python experiments/analyze_per_length.py
 ```
 
 The analysis validates the per-length CSV data against the existing aggregate report before saving `reports/modulus_sweep_by_length.md`. It reuses the existing sweep results and does not rerun the exhaustive experiment or overwrite the existing reports.
+
+Validate the sweep counts against exact analytical formulas:
+
+```powershell
+python experiments/validate_analytical_counts.py
+```
+
+The validator reads the existing per-length CSV and aggregate Markdown, checks all event counts and displayed rates, and saves the mathematical characterization to `reports/modulus_characterization.md`. It does not rerun the exhaustive sweep or modify the existing reports.
