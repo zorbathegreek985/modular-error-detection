@@ -9,6 +9,7 @@ from financial_data_workbench import (
     NumericConstraint,
     OHLCColumns,
     Severity,
+    ValidationSummary,
     load_csv,
     load_csv_text,
     validate_dataset,
@@ -354,3 +355,78 @@ def test_schema_rejects_invalid_ohlc_column_names(kwargs, error, message):
 def test_numeric_constraint_requires_boolean_inclusivity_flags(kwargs):
     with pytest.raises(TypeError, match="must be a bool"):
         NumericConstraint(**kwargs)
+
+
+def test_validation_summary_mappings_are_read_only_and_copy_inputs():
+    severities = {"error": 2}
+    codes_by_name = {"INVALID_TYPE": 2}
+    summary = ValidationSummary(3, 2, severities, codes_by_name)
+    severities["warning"] = 1
+    codes_by_name.clear()
+
+    assert summary.issues_by_severity == {"error": 2}
+    assert summary.issues_by_code == {"INVALID_TYPE": 2}
+    assert summary == ValidationSummary(
+        3, 2, {"error": 2}, {"INVALID_TYPE": 2}
+    )
+    with pytest.raises(TypeError):
+        summary.issues_by_severity["error"] = 0
+    with pytest.raises(TypeError):
+        summary.issues_by_code["OTHER"] = 1
+
+
+def test_numeric_constraint_accepts_equal_inclusive_bounds():
+    constraint = NumericConstraint(minimum="5.25", maximum=Decimal("5.25"))
+
+    assert constraint.minimum == Decimal("5.25")
+    assert constraint.maximum == Decimal("5.25")
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"minimum_inclusive": False},
+        {"maximum_inclusive": False},
+    ],
+)
+def test_numeric_constraint_rejects_equal_bounds_with_exclusive_edge(kwargs):
+    with pytest.raises(ValueError, match="equal bounds require both bounds to be inclusive"):
+        NumericConstraint(minimum=5, maximum=5, **kwargs)
+
+
+def test_numeric_constraint_rejects_reversed_bounds():
+    with pytest.raises(ValueError, match="minimum must not exceed maximum"):
+        NumericConstraint(minimum=6, maximum=5)
+
+
+def test_loader_rejects_duplicate_column_headers():
+    schema = DataSchema(required_columns=("timestamp",))
+
+    with pytest.raises(CSVInputError, match="duplicate columns: timestamp"):
+        load_csv_text("timestamp,timestamp\n2026-10-01,2026-10-02\n", schema)
+
+
+def test_loader_text_strips_utf8_bom_from_first_header():
+    schema = DataSchema(required_columns=("timestamp",), timestamp_column="timestamp")
+
+    dataset = load_csv_text("\ufefftimestamp\n2026-10-01T09:00:00\n", schema)
+
+    assert dataset.headers == ("timestamp",)
+    assert dataset.records[0].values["timestamp"] == "2026-10-01T09:00:00"
+
+
+def test_loader_rejects_malformed_csv_quoting():
+    schema = DataSchema(required_columns=("timestamp", "note"))
+
+    with pytest.raises(CSVInputError, match="Malformed CSV near physical line"):
+        load_csv_text('timestamp,note\n2026-10-01T09:00:00,"unterminated\n', schema)
+
+
+def test_loader_rejects_blank_physical_row_instead_of_silently_skipping_it():
+    schema = DataSchema(required_columns=("timestamp",))
+
+    with pytest.raises(
+        CSVInputError,
+        match="Malformed CSV record 1 ending at line 2: expected 1 fields, found 0",
+    ):
+        load_csv_text("timestamp\n\n2026-10-01T09:00:00\n", schema)

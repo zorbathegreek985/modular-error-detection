@@ -48,6 +48,9 @@ class NumericConstraint:
         maximum = _decimal_bound(self.maximum, "maximum")
         if minimum is not None and maximum is not None and minimum > maximum:
             raise ValueError("minimum must not exceed maximum")
+        if (minimum is not None and maximum is not None and minimum == maximum
+                and not (self.minimum_inclusive and self.maximum_inclusive)):
+            raise ValueError("equal bounds require both bounds to be inclusive")
         object.__setattr__(self, "minimum", minimum)
         object.__setattr__(self, "maximum", maximum)
 

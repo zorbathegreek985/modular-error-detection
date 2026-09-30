@@ -131,7 +131,7 @@ def validate_dataset(dataset: LoadedDataset, schema: DataSchema) -> ValidationRe
                 timestamp_values.append((record, None))
                 continue
             try:
-                timestamp = datetime.fromisoformat(raw.strip().replace("Z", "+00:00"))
+                timestamp = _parse_timestamp(raw)
             except ValueError as error:
                 add("INVALID_TIMESTAMP", f"Invalid ISO-8601 timestamp: {error}.", record, timestamp_column)
                 timestamp_values.append((record, None))

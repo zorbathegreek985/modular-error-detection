@@ -1,8 +1,10 @@
 """Deterministic result types shared by dataset validators and callers."""
 
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
+from types import MappingProxyType
 
 
 class Severity(str, Enum):
@@ -31,8 +33,22 @@ class ValidationIssue:
 class ValidationSummary:
     records_checked: int
     total_issues: int
-    issues_by_severity: dict[str, int]
-    issues_by_code: dict[str, int]
+    issues_by_severity: Mapping[str, int]
+    issues_by_code: Mapping[str, int]
+
+    def __post_init__(self) -> None:
+        # Freeze defensive copies so neither the caller nor its input mapping
+        # can mutate a summary after construction.
+        object.__setattr__(
+            self,
+            "issues_by_severity",
+            MappingProxyType(dict(sorted(self.issues_by_severity.items()))),
+        )
+        object.__setattr__(
+            self,
+            "issues_by_code",
+            MappingProxyType(dict(sorted(self.issues_by_code.items()))),
+        )
 
 
 @dataclass(frozen=True)
