@@ -52,3 +52,11 @@ python experiments/render_modulus_plots.py
 ```
 
 The plots are saved as `reports/substitution_detection_rate.svg` and `reports/transposition_detection_rate.svg`. Their rates aggregate event counts across lengths rather than averaging per-length rates.
+
+Analyze the existing sweep results by string length:
+
+```powershell
+python experiments/analyze_per_length.py
+```
+
+The analysis validates the per-length CSV data against the existing aggregate report before saving `reports/modulus_sweep_by_length.md`. It reuses the existing sweep results and does not rerun the exhaustive experiment or overwrite the existing reports.
