@@ -79,3 +79,27 @@ The research documents provide theoretical foundations, factual comparisons with
 - [Error detection and error correction](docs/error_detection_vs_error_correction.md)
 - [Checksum history](docs/checksum_history.md)
 - [Limitations and future work](docs/limitations_and_future_work.md)
+
+## Financial validation reports
+
+The financial workbench can render an existing `ValidationResult` as Markdown or deterministic JSON. Reports include summary counts and findings without copying financial cell values. The optional source label is caller-supplied; reports do not calculate file hashes or add timestamps. A report is a snapshot of validation findings, not an authenticated audit log or proof of financial correctness.
+
+```python
+from financial_data_workbench import (
+    DataSchema,
+    load_csv,
+    render_json_report,
+    render_markdown_report,
+    validate_dataset,
+)
+
+schema = DataSchema(
+    required_columns=("timestamp", "Close"),
+    timestamp_column="timestamp",
+)
+dataset = load_csv("prices.csv", schema)
+result = validate_dataset(dataset, schema)
+
+markdown = render_markdown_report(result, source_label="prices.csv")
+json_report = render_json_report(result, source_label="prices.csv")
+```
