@@ -103,3 +103,29 @@ result = validate_dataset(dataset, schema)
 markdown = render_markdown_report(result, source_label="prices.csv")
 json_report = render_json_report(result, source_label="prices.csv")
 ```
+
+### Command-line CSV validation
+
+The workbench also provides a small command-line interface using the built-in
+`ohlcv` profile. Install the project, then run it from the repository root:
+
+```powershell
+python -m pip install -e .
+python -m financial_data_workbench prices.csv --schema ohlcv --format markdown --output validation-report.md
+```
+
+The profile expects the case-sensitive columns `timestamp`, `Open`, `High`,
+`Low`, `Close`, and `Volume`. Timestamps use the validator's ISO parsing;
+date-only values are interpreted as midnight without implying a time zone.
+The four OHLC columns are parsed as decimal values and checked using the
+existing high/low relationships. `Volume` is an integer constrained to be
+nonnegative. No price bounds, cadence, or exchange-calendar rules are assumed.
+The report is written as Markdown by default; pass `--format json` for JSON,
+or omit `--output` to write the report to standard output. The CLI prints a
+summary without raw cell values.
+
+Exit codes are `0` when validation finds no issues, `1` when validation
+completes with data-quality issues, and `2` for command or execution errors.
+An output path that identifies the input file is rejected to prevent replacing
+the source CSV. `--schema ohlcv` is a CLI profile, not a schema registry entry
+or an existing project-wide schema identifier.
