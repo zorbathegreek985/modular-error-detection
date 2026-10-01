@@ -111,8 +111,12 @@ The workbench also provides a small command-line interface using the built-in
 
 ```powershell
 python -m pip install -e .
-python -m financial_data_workbench prices.csv --schema ohlcv --format markdown --output validation-report.md
+financial-data-workbench prices.csv --schema ohlcv --format markdown --output validation-report.md
 ```
+
+The installed `financial-data-workbench` command and
+`python -m financial_data_workbench` use the same CLI; either form may be used.
+The latter is also available after installation.
 
 The profile expects the case-sensitive columns `timestamp`, `Open`, `High`,
 `Low`, `Close`, and `Volume`. Timestamps use the validator's ISO parsing;
