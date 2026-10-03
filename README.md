@@ -2,6 +2,8 @@
 
 This project studies how modular residues detect common errors in fixed-width decimal strings. It includes Python checksum utilities, unit tests, and an exhaustive sweep with CSV and Markdown reports.
 
+The broader research record also derives radix-generalized spectra and studies observable-spectrum equivalence and identifiability. This repository is a reproducible computational-mathematics investigation; it makes no novelty or publication-priority claim.
+
 ## Research question and error models
 
 For a selected modulus, which single-digit substitutions and unequal adjacent transpositions change a string's residue?
@@ -59,7 +61,7 @@ Analyze the existing sweep results by string length:
 python experiments/analyze_per_length.py
 ```
 
-The analysis validates the per-length CSV data against the existing aggregate report before saving `reports/modulus_sweep_by_length.md`. It reuses the existing sweep results and does not rerun the exhaustive experiment or overwrite the existing reports.
+The analysis validates the per-length CSV data against the existing aggregate report before saving `reports/modulus_sweep_by_length.md`. It reuses the existing sweep results and does not rerun the exhaustive experiment or modify its CSV or aggregate Markdown inputs. If the per-length report target already exists, it is overwritten.
 
 Validate the sweep counts against exact analytical formulas:
 
@@ -67,7 +69,47 @@ Validate the sweep counts against exact analytical formulas:
 python experiments/validate_analytical_counts.py
 ```
 
-The validator reads the existing per-length CSV and aggregate Markdown, checks all event counts and displayed rates, and saves the mathematical characterization to `reports/modulus_characterization.md`. It does not rerun the exhaustive sweep or modify the existing reports.
+The validator reads the existing per-length CSV and aggregate Markdown, checks all event counts and displayed rates, and saves the mathematical characterization to `reports/modulus_characterization.md`. It does not rerun the exhaustive sweep or modify its CSV or aggregate Markdown inputs. If the characterization report target already exists, it is overwritten.
+
+## Radix spectrum API
+
+The bounded research enumerator is available from `modular_error_detection.radix_spectra`. It groups moduli by selected substitution, transposition, or joint count spectra over positions `0` through a caller-supplied maximum position. To compare complete spectra over a bounded modulus range, use a shared endpoint at least as large as the maximum stabilization position in that range:
+
+```python
+from modular_error_detection.radix_spectra import (
+    enumerate_radix_spectrum_classes,
+    radix_stabilization_position,
+)
+
+radix = 10
+minimum_modulus, maximum_modulus = 2, 5000
+last_position = max(
+    radix_stabilization_position(radix, modulus)
+    for modulus in range(minimum_modulus, maximum_modulus + 1)
+)
+result = enumerate_radix_spectrum_classes(
+    radix, minimum_modulus, maximum_modulus, last_position
+)
+print(result.moduli_examined, result.class_count)
+```
+
+This API reproduces bounded analytical spectrum groupings; it does not enumerate source strings or introduce additional error models. The finite class counts are computational observations, while the general formulas and identifiability claims are mathematical results in the research notes.
+
+Reproduce the full bounded class-count table in R12 with one deterministic command from the repository root:
+
+```powershell
+python experiments/reproduce_r12_radix_spectra.py
+```
+
+The script uses the existing radix-spectrum API and prints CSV to standard output for radices `2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20` and moduli 2–5000. Each row includes the inclusive stabilization endpoint, number of moduli examined, substitution-only, transposition-only, and joint class counts, and the size of the all-zero joint class. The output is a bounded computational reproduction of R12's table; it does not prove results outside that domain.
+
+## Research notes
+
+- [Research summary](research/research_summary.md) — researcher-facing overview of the model, evidence, limitations, and reproduction path.
+- [Formal mathematical model](research/formal_model.md)
+- [R11 radix-generalized spectra](research/r11_radix_generalization.md)
+- [R12 identifiability analysis](research/r12_identifiability.md)
+- [R13 research artifact audit](research/r13_research_artifact_audit.md)
 
 ## Phase 4 research notes
 
