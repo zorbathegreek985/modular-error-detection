@@ -121,3 +121,57 @@ The research documents provide theoretical foundations, factual comparisons with
 - [Error detection and error correction](docs/error_detection_vs_error_correction.md)
 - [Checksum history](docs/checksum_history.md)
 - [Limitations and future work](docs/limitations_and_future_work.md)
+
+## Financial validation reports
+
+The financial workbench can render an existing `ValidationResult` as Markdown or deterministic JSON. Reports include summary counts and findings without copying financial cell values. The optional source label is caller-supplied; reports do not calculate file hashes or add timestamps. A report is a snapshot of validation findings, not an authenticated audit log or proof of financial correctness.
+
+```python
+from financial_data_workbench import (
+    DataSchema,
+    load_csv,
+    render_json_report,
+    render_markdown_report,
+    validate_dataset,
+)
+
+schema = DataSchema(
+    required_columns=("timestamp", "Close"),
+    timestamp_column="timestamp",
+)
+dataset = load_csv("prices.csv", schema)
+result = validate_dataset(dataset, schema)
+
+markdown = render_markdown_report(result, source_label="prices.csv")
+json_report = render_json_report(result, source_label="prices.csv")
+```
+
+### Command-line CSV validation
+
+The workbench also provides a small command-line interface using the built-in
+`ohlcv` profile. Install the project, then run it from the repository root:
+
+```powershell
+python -m pip install -e .
+financial-data-workbench prices.csv --schema ohlcv --format markdown --output validation-report.md
+```
+
+The installed `financial-data-workbench` command and
+`python -m financial_data_workbench` use the same CLI; either form may be used.
+The latter is also available after installation.
+
+The profile expects the case-sensitive columns `timestamp`, `Open`, `High`,
+`Low`, `Close`, and `Volume`. Timestamps use the validator's ISO parsing;
+date-only values are interpreted as midnight without implying a time zone.
+The four OHLC columns are parsed as decimal values and checked using the
+existing high/low relationships. `Volume` is an integer constrained to be
+nonnegative. No price bounds, cadence, or exchange-calendar rules are assumed.
+The report is written as Markdown by default; pass `--format json` for JSON,
+or omit `--output` to write the report to standard output. The CLI prints a
+summary without raw cell values.
+
+Exit codes are `0` when validation finds no issues, `1` when validation
+completes with data-quality issues, and `2` for command or execution errors.
+An output path that identifies the input file is rejected to prevent replacing
+the source CSV. `--schema ohlcv` is a CLI profile, not a schema registry entry
+or an existing project-wide schema identifier.
